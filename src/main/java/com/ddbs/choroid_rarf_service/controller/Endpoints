@@ -1,0 +1,17 @@
+GET choroid/rarf/session/{sessionId}
+Returns the RARF data for a session identified by its session ID.
+
+GET choroid/rarf/user/{userId}
+Returns all RARF sessions associated with a specific user identified by their user ID.
+
+GET choroid/rarf/session/{sessionId}/user{userId}
+Returns the RARF data for a specific user within a specific session.
+
+POST choroid/rarf/register
+Registers a user for a session where the user ID and session ID are specified in the request body.
+
+PATCH choroid/rarf/session/{sessionId}/user/{userId}
+Updates the RARF data for a specific user within a specific session with the details provided in the request body.
+
+DELETE choroid/rarf/session/{sessionId}/user/{userId}
+Deletes the RARF data for a specific user within a specific session.

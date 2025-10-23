@@ -1,5 +1,6 @@
+-- Create the 'rarf' table
 CREATE TABLE rarf (
-    session_id BIGINT NOT NULL,
+    session_id UUID NOT NULL,
     user_id VARCHAR(255) NOT NULL,
     feedback_filled BOOLEAN NOT NULL DEFAULT false,
     rating INTEGER CHECK (rating BETWEEN 0 AND 5),

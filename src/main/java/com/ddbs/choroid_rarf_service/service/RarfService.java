@@ -1,5 +1,11 @@
 package com.ddbs.choroid_rarf_service.service;
 
+import com.ddbs.choroid_rarf_service.dto.FeedbackFields;
+import com.ddbs.choroid_rarf_service.dto.FillFeedbackRequest;
+import com.ddbs.choroid_rarf_service.dto.PageResponse;
+import com.ddbs.choroid_rarf_service.dto.RegistrationRequest;
+import com.ddbs.choroid_rarf_service.mapper.FillFeedbackRequestMapper;
+import com.ddbs.choroid_rarf_service.mapper.RegistrationRequestMapper;
 import com.ddbs.choroid_rarf_service.model.Rarf;
 import com.ddbs.choroid_rarf_service.repository.RarfRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class RarfService {
@@ -14,41 +21,35 @@ public class RarfService {
     @Autowired
     private RarfRepository rarfRepository;
 
-    public List<Rarf> getBySessionId(Long sessionId) {
-        return rarfRepository.findBySessionId(sessionId);
+    public PageResponse<Rarf> getBySessionId(UUID sessionId, int page, int size)
+    {
+        return rarfRepository.findBySessionId(sessionId, page, size);
     }
 
-    public List<Rarf> getByUserId(String userId) {
-        return rarfRepository.findByUserId(userId);
+    public PageResponse<Rarf> getByUserId(String userId, int page, int size)
+    {
+        return rarfRepository.findByUserId(userId, page, size);
     }
 
-    public Optional<Rarf> getBySessionIdAndUserId(Long sessionId, String userId) {
+    public Rarf getBySessionIdAndUserId(UUID sessionId, String userId)
+    {
         return rarfRepository.findBySessionIdAndUserId(sessionId, userId);
     }
 
-    public Rarf createRarf(Rarf rarf) {
+    public Rarf save(RegistrationRequest request)
+    {
+        Rarf rarf = RegistrationRequestMapper.convertToRarf(request);
         return rarfRepository.save(rarf);
     }
 
-    public Optional<Rarf> updateRarf(Long sessionId, String userId, Rarf rarf) {
-        return rarfRepository.findBySessionIdAndUserId(sessionId, userId).map(existingRarf -> {
-            existingRarf.setFeedback_filled(rarf.getFeedback_filled());
-            existingRarf.setRating(rarf.getRating());
-            existingRarf.setUnderstandable_score(rarf.getUnderstandable_score());
-            existingRarf.setConfidence_score(rarf.getConfidence_score());
-            existingRarf.setExpectations_score(rarf.getExpectations_score());
-            existingRarf.setEngagement_score(rarf.getEngagement_score());
-            existingRarf.setOrganization_score(rarf.getOrganization_score());
-            existingRarf.setRelevance_score(rarf.getRelevance_score());
-            existingRarf.setPresenter_score(rarf.getPresenter_score());
-            existingRarf.setPace_score(rarf.getPace_score());
-            existingRarf.setMost_valuable(rarf.getMost_valuable());
-            existingRarf.setSuggestions(rarf.getSuggestions());
-            return rarfRepository.update(existingRarf);
-        });
+    public Rarf update(UUID sessionId, String userId, FillFeedbackRequest request)
+    {
+        FeedbackFields feedbackFields = FillFeedbackRequestMapper.toFeedbackFields(request);
+        return rarfRepository.update(sessionId, userId, feedbackFields);
     }
 
-    public void deleteRarf(Long sessionId, String userId) {
+    public void delete(UUID sessionId, String userId)
+    {
         rarfRepository.deleteBySessionIdAndUserId(sessionId, userId);
     }
 }

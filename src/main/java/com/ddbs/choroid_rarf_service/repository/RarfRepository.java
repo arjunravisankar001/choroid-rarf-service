@@ -1,17 +1,20 @@
 package com.ddbs.choroid_rarf_service.repository;
 
+import com.ddbs.choroid_rarf_service.dto.FeedbackFields;
+import com.ddbs.choroid_rarf_service.dto.PageResponse;
 import com.ddbs.choroid_rarf_service.model.Rarf;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @Repository
 public class RarfRepository {
 
@@ -23,79 +26,175 @@ public class RarfRepository {
 
     private final RowMapper<Rarf> rarfRowMapper = (rs, rowNum) -> {
         Rarf rarf = new Rarf();
-        rarf.setSession_id(rs.getLong("session_id"));
-        rarf.setUser_id(rs.getString("user_id"));
-        rarf.setFeedback_filled(rs.getBoolean("feedback_filled"));
+        rarf.setSessionId(UUID.fromString(rs.getString("session_id")));
+        rarf.setUserId(rs.getString("user_id"));
+        rarf.setFeedbackFilled(rs.getBoolean("feedback_filled"));
         rarf.setRating(rs.getInt("rating"));
-        rarf.setUnderstandable_score(rs.getInt("understandable_score"));
-        rarf.setConfidence_score(rs.getInt("confidence_score"));
-        rarf.setExpectations_score(rs.getInt("expectations_score"));
-        rarf.setEngagement_score(rs.getInt("engagement_score"));
-        rarf.setOrganization_score(rs.getInt("organization_score"));
-        rarf.setRelevance_score(rs.getInt("relevance_score"));
-        rarf.setPresenter_score(rs.getInt("presenter_score"));
-        rarf.setPace_score(rs.getInt("pace_score"));
-        rarf.setMost_valuable(rs.getString("most_valuable"));
+        rarf.setUnderstandableScore(rs.getInt("understandable_score"));
+        rarf.setConfidenceScore(rs.getInt("confidence_score"));
+        rarf.setExpectationsScore(rs.getInt("expectations_score"));
+        rarf.setEngagementScore(rs.getInt("engagement_score"));
+        rarf.setOrganizationScore(rs.getInt("organization_score"));
+        rarf.setRelevanceScore(rs.getInt("relevance_score"));
+        rarf.setPresenterScore(rs.getInt("presenter_score"));
+        rarf.setPaceScore(rs.getInt("pace_score"));
+        rarf.setMostValuable(rs.getString("most_valuable"));
         rarf.setSuggestions(rs.getString("suggestions"));
         return rarf;
     };
 
-    public List<Rarf> findBySessionId(Long session_id) {
-        return jdbcTemplate.query("SELECT * FROM rarf WHERE session_id = ?", rarfRowMapper, session_id);
+    private final RowMapper<Long> countRowMapper = (rs, rowNum) -> rs.getLong(1);
+
+    public PageResponse<Rarf> findBySessionId(UUID sessionId, int page, int size)
+    {
+        try {
+            List<Rarf> items = jdbcTemplate.query("SELECT * FROM rarf WHERE session_id = ? LIMIT ? OFFSET ?", rarfRowMapper, sessionId, size, page*size);
+            long totalItems = jdbcTemplate.query("SELECT COUNT(*) FROM rarf WHERE session_id = ?", countRowMapper, sessionId).getFirst();
+            int totalPages = (int) Math.ceil((double) totalItems / size);
+            return new PageResponse<Rarf>(items, page, size, totalItems, totalPages);
+        } catch (DataAccessException e) {
+            log.error("Database error fetching rarf records by sessionId: {}", sessionId, e);
+            throw new RuntimeException("Database error occurred while fetching rarf records by sessionId: " + sessionId, e);
+        }
+        catch (Exception e) {
+            log.error("Unexpected error fetching rarf by sessionId: {}", sessionId, e);
+            throw new RuntimeException("Unexpected error fetching rarf by sessionId: " + sessionId, e);
+        }
     }
 
-    public List<Rarf> findByUserId(String user_id) {
-        return jdbcTemplate.query("SELECT * FROM rarf WHERE user_id = ?", rarfRowMapper, user_id);
+    public PageResponse<Rarf> findByUserId(String userId, int page, int size)
+    {
+        try {
+            List<Rarf> items = jdbcTemplate.query("SELECT * FROM rarf WHERE user_id = ?", rarfRowMapper, userId);
+            long totalItems = jdbcTemplate.query("SELECT COUNT(*) FROM rarf WHERE user_id = ?", countRowMapper, userId).getFirst();
+            int totalPages = (int) Math.ceil((double) totalItems / size);
+            return new PageResponse<Rarf>(items, page, size, totalItems, totalPages);
+        } catch (DataAccessException e) {
+            log.error("Database error fetching rarf records by userId: {}", userId, e);
+            throw new RuntimeException("Database error occurred while fetching rarf records by userId: " + userId, e);
+        }
+        catch (Exception e) {
+            log.error("Unexpected error fetching rarf by userId: {}", userId, e);
+            throw new RuntimeException("Unexpected error fetching rarf by userId: " + userId, e);
+        }
     }
 
-    public Optional<Rarf> findBySessionIdAndUserId(Long session_id, String user_id) {
-        List<Rarf> results = jdbcTemplate.query("SELECT * FROM rarf WHERE session_id = ? AND user_id = ?", rarfRowMapper, session_id, user_id);
-        return results.stream().findFirst();
+    public Rarf findBySessionIdAndUserId(UUID sessionId, String userId)
+    {
+        String sql = "SELECT * FROM rarf WHERE session_id = ? AND user_id = ?";
+        try {
+            List<Rarf> results = jdbcTemplate.query(sql, rarfRowMapper, sessionId, userId);
+            if (results.isEmpty()) {
+                log.error("No rarf record found for sessionId: {} and userId: {}", sessionId, userId);
+                throw new RuntimeException("Rarf record not found for sessionId: " + sessionId + " and userId: " + userId);
+            }
+            else {
+                return results.getFirst();
+            }
+        }
+        catch (DataAccessException e) {
+            log.error("Database error fetching rarf record for sessionId: {} and userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Database error occurred while fetching rarf record for sessionId: " + sessionId + " and userId: " + userId, e);
+        }
+        catch (Exception e) {
+            if (e.getMessage().contains("not found")) {
+                throw (RuntimeException) e; // rethrow not found exception
+            }
+            log.error("Unexpected error fetching rarf for sessionId: {} and userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Unexpected error occurred while fetching rarf for sessionId: " + sessionId + " and userId: " + userId, e);
+        }
     }
 
     public Rarf save(Rarf rarf) {
-        jdbcTemplate.update(
-                "INSERT INTO rarf (session_id, user_id, feedback_filled, rating, understandable_score, confidence_score, expectations_score, engagement_score, organization_score, relevance_score, presenter_score, pace_score, most_valuable, suggestions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                rarf.getSession_id(),
-                rarf.getUser_id(),
-                rarf.getFeedback_filled(),
-                rarf.getRating(),
-                rarf.getUnderstandable_score(),
-                rarf.getConfidence_score(),
-                rarf.getExpectations_score(),
-                rarf.getEngagement_score(),
-                rarf.getOrganization_score(),
-                rarf.getRelevance_score(),
-                rarf.getPresenter_score(),
-                rarf.getPace_score(),
-                rarf.getMost_valuable(),
-                rarf.getSuggestions()
-        );
-        return rarf;
+        //Check for duplicate registration
+        String checkSql = "SELECT COUNT(*) FROM rarf WHERE session_id = ? AND user_id = ?";
+        Long count = 0L;
+        try {
+            count = jdbcTemplate.queryForObject(checkSql, countRowMapper, rarf.getSessionId(), rarf.getUserId());
+        } catch (DataAccessException e) {
+            log.error("Database error checking for existing rarf record for sessionId: {} and userId: {}", rarf.getSessionId(), rarf.getUserId(), e);
+            throw new RuntimeException("Database error occurred while checking for existing rarf record for sessionId: " + rarf.getSessionId() + " and userId: " + rarf.getUserId(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error checking for existing rarf record for sessionId: {} and userId: {}", rarf.getSessionId(), rarf.getUserId(), e);
+            throw new RuntimeException("Unexpected error occurred while checking for existing rarf record for sessionId: " + rarf.getSessionId() + " and userId: " + rarf.getUserId(), e);
+        }
+        if (count != null && count > 0) {
+            log.error("Duplicate registration detected for sessionId: {} and userId: {}", rarf.getSessionId(), rarf.getUserId());
+            throw new RuntimeException("Duplicate registration detected for sessionId: " + rarf.getSessionId() + " and userId: " + rarf.getUserId());
+        }
+
+        String sql = "INSERT INTO rarf (session_id, user_id, feedback_filled, rating, understandable_score, confidence_score, expectations_score, engagement_score, organization_score, relevance_score, presenter_score, pace_score, most_valuable, suggestions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            jdbcTemplate.update(sql,
+                    rarf.getSessionId(),
+                    rarf.getUserId(),
+                    rarf.getFeedbackFilled(),
+                    rarf.getRating(),
+                    rarf.getUnderstandableScore(),
+                    rarf.getConfidenceScore(),
+                    rarf.getExpectationsScore(),
+                    rarf.getEngagementScore(),
+                    rarf.getOrganizationScore(),
+                    rarf.getRelevanceScore(),
+                    rarf.getPresenterScore(),
+                    rarf.getPaceScore(),
+                    rarf.getMostValuable(),
+                    rarf.getSuggestions()
+            );
+            return rarf;
+        } catch (DataAccessException e) {
+            log.error("Database error occurred while registering for sessionId: {} by userId: {}", rarf.getSessionId(), rarf.getUserId(), e);
+            throw new RuntimeException("Database error occurred while registering for sessionId: " + rarf.getSessionId() + " by userId: " + rarf.getUserId(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error saving registration for sessionId: {} by userId: {}", rarf.getSessionId(), rarf.getUserId(), e);
+            throw new RuntimeException("Unexpected error occurred while registering for sessionId: " + rarf.getSessionId() + " by userId: " + rarf.getUserId(), e);
+        }
     }
 
-    public Rarf update(Rarf rarf) {
-        jdbcTemplate.update(
-                "UPDATE rarf SET feedback_filled = ?, rating = ?, understandable_score = ?, confidence_score = ?, expectations_score = ?, engagement_score = ?, organization_score = ?, relevance_score = ?, presenter_score = ?, pace_score = ?, most_valuable = ?, suggestions = ? WHERE session_id = ? AND user_id = ?",
-                rarf.getFeedback_filled(),
-                rarf.getRating(),
-                rarf.getUnderstandable_score(),
-                rarf.getConfidence_score(),
-                rarf.getExpectations_score(),
-                rarf.getEngagement_score(),
-                rarf.getOrganization_score(),
-                rarf.getRelevance_score(),
-                rarf.getPresenter_score(),
-                rarf.getPace_score(),
-                rarf.getMost_valuable(),
-                rarf.getSuggestions(),
-                rarf.getSession_id(),
-                rarf.getUser_id()
-        );
-        return rarf;
+    public Rarf update(UUID sessionId, String userId, FeedbackFields feedbackFields)
+    {
+        try {
+            Rarf rarf = findBySessionIdAndUserId(sessionId, userId);
+            String sql = feedbackFields.getSql();
+            Object[] params = feedbackFields.getUpdateParams(sessionId, userId);
+            int rowsAffected = jdbcTemplate.update(sql, params);
+            if (rowsAffected == 0) {
+                log.error("No feedback filled for sessionId: {} by userId: {}", sessionId, userId);
+                throw new RuntimeException("No feedback filled for sessionId: " + sessionId + " by userId: " + userId);
+            }
+            rarf = findBySessionIdAndUserId(sessionId, userId);
+            return rarf;
+        } catch (DataAccessException e) {
+            log.error("Database error occurred while filling feedback for sessionId: {} by userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Database error occurred while filling feedback for sessionId: " + sessionId + " by userId: " + userId, e);
+        }
+        catch (Exception e) {
+            if (e.getMessage().contains("not found") || e.getMessage().contains("No feedback filled")) {
+                throw (RuntimeException) e; // rethrow not found exception
+            }
+            log.error("Unexpected error filling feedback for sessionId: {} by userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Unexpected error occurred while filling feedback for sessionId: " + sessionId + " by userId: " + userId, e);
+        }
     }
 
-    public void deleteBySessionIdAndUserId(Long session_id, String user_id) {
-        jdbcTemplate.update("DELETE FROM rarf WHERE session_id = ? AND user_id = ?", session_id, user_id);
+    public void deleteBySessionIdAndUserId(UUID sessionId, String userId)
+    {
+        String sql = "DELETE FROM rarf WHERE session_id = ? AND user_id = ?";
+        try {
+            int rowsAffected = jdbcTemplate.update(sql, sessionId, userId);
+            if (rowsAffected == 0) {
+                log.error("No rows deleted for sessionId: {} and userId: {}", sessionId, userId);
+                throw new RuntimeException("No rows deleted for for sessionId: " + sessionId + " and userId: " + userId);
+            }
+        } catch (DataAccessException e) {
+            log.error("Database error occurred while deleting rarf record for sessionId: {} by userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Database error occurred while deleting rarf record for sessionId: " + sessionId + " by userId: " + userId, e);
+        } catch (Exception e) {
+            if (e.getMessage().contains("not found") || e.getMessage().contains("no rows deleted")) {
+                throw (RuntimeException) e; // rethrow not found exception
+            }
+            log.error("Unexpected error deleting rarf record for sessionId: {} by userId: {}", sessionId, userId, e);
+            throw new RuntimeException("Unexpected error occurred while deleting rarf record for sessionId: " + sessionId + " by userId: " + userId, e);
+        }
     }
 }
