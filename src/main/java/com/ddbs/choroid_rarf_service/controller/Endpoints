@@ -1,8 +1,38 @@
+GET choroid/rarf/count
+Returns the total count of RARF records.
+
+GET choroid/rarf
+Returns all RARF data.
+
+GET choroid/rarf/session/{sessionId}/registeredCount
+Returns the count of RARF records registered for a specific session identified by its session ID.
+
+GET choroid/rarf/session/{sessionId}/attendedCount
+Returns the count of RARF records marked as attended for a specific session (i.e. feedback_filled is true) identified by its session ID.
+
+GET choroid/rarf/user/{userId}/registeredCount
+Returns the count of RARF records registered by a specific user identified by their user ID.
+
+GET choroid/rarf/user/{userId}/attendedCount
+Returns the count of RARF records marked as attended (i.e. feedback_filled is true) by a specific user identified by their user ID.
+
+GET choroid/rarf/session/{sessionId}/all
+Returns all RARF records for a specific session identified by its session ID.
+
+GET choroid/rarf/user/{userId}/all
+Returns all RARF records for a specific user identified by their user ID.
+
+GET choroid/rarf/session/{sessionId}/stats
+Returns statistical data (like average ratings and other scores) for a specific session identified by its session ID.
+
+GET choroid/rarf/session/stats
+Returns statistical data (like average ratings and other scores) for all sessions.
+
 GET choroid/rarf/session/{sessionId}
-Returns the RARF data for a session identified by its session ID.
+Returns the RARF data for a session identified by its session ID (paginated).
 
 GET choroid/rarf/user/{userId}
-Returns all RARF sessions associated with a specific user identified by their user ID.
+Returns all RARF sessions associated with a specific user identified by their user ID (paginated).
 
 GET choroid/rarf/session/{sessionId}/user{userId}
 Returns the RARF data for a specific user within a specific session.
