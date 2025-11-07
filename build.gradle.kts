@@ -32,6 +32,8 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.8")
+
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
