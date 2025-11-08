@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class RarfService {
@@ -31,7 +30,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}/registeredCount
-    public Long getRegisteredCountBySessionId(UUID sessionId)
+    public Long getRegisteredCountBySessionId(String sessionId)
     {
         return rarfRepository.registeredCountBySessionId(sessionId);
     }
@@ -43,7 +42,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}/attendedCount
-    public Long getAttendedCountBySessionId(UUID sessionId)
+    public Long getAttendedCountBySessionId(String sessionId)
     {
         return rarfRepository.attendedCountBySessionId(sessionId);
     }
@@ -55,7 +54,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}/all
-    public List<Rarf> getAllBySessionId(UUID sessionId)
+    public List<Rarf> getAllBySessionId(String sessionId)
     {
         return rarfRepository.findBySessionId(sessionId);
     }
@@ -67,7 +66,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}/stats
-    public Stats getStatsBySessionId(UUID sessionId)
+    public Stats getStatsBySessionId(String sessionId)
     {
         return rarfRepository.getStatsBySessionId(sessionId);
     }
@@ -79,7 +78,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}
-    public PageResponse<Rarf> getBySessionId(UUID sessionId, int page, int size)
+    public PageResponse<Rarf> getBySessionId(String sessionId, int page, int size)
     {
         return rarfRepository.findBySessionId(sessionId, page, size);
     }
@@ -91,7 +90,7 @@ public class RarfService {
     }
 
     //GET choroid/rarf/session/{sessionId}/user/{userId}
-    public Rarf getBySessionIdAndUserId(UUID sessionId, String userId)
+    public Rarf getBySessionIdAndUserId(String sessionId, String userId)
     {
         return rarfRepository.findBySessionIdAndUserId(sessionId, userId);
     }
@@ -104,14 +103,14 @@ public class RarfService {
     }
 
     //PATCH choroid/rarf/session/{sessionId}/user/{userId}
-    public Rarf update(UUID sessionId, String userId, FillFeedbackRequest request)
+    public Rarf update(String sessionId, String userId, FillFeedbackRequest request)
     {
         FeedbackFields feedbackFields = FillFeedbackRequestMapper.toFeedbackFields(request);
         return rarfRepository.update(sessionId, userId, feedbackFields);
     }
 
     //DELETE choroid/rarf/session/{sessionId}/user/{userId}
-    public void delete(UUID sessionId, String userId)
+    public void delete(String sessionId, String userId)
     {
         rarfRepository.deleteBySessionIdAndUserId(sessionId, userId);
     }

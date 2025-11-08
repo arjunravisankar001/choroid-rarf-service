@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -36,7 +35,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}/registeredCount")
-    public Long getRegisteredCountBySessionId(@PathVariable UUID sessionId)
+    public Long getRegisteredCountBySessionId(@PathVariable String sessionId)
     {
         return rarfService.getRegisteredCountBySessionId(sessionId);
     }
@@ -48,7 +47,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}/attendedCount")
-    public Long getAttendedCountBySessionId(@PathVariable UUID sessionId)
+    public Long getAttendedCountBySessionId(@PathVariable String sessionId)
     {
         return rarfService.getAttendedCountBySessionId(sessionId);
     }
@@ -60,7 +59,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}/all")
-    public List<Rarf> getAllBySessionId(@PathVariable UUID sessionId)
+    public List<Rarf> getAllBySessionId(@PathVariable String sessionId)
     {
         return rarfService.getAllBySessionId(sessionId);
     }
@@ -72,7 +71,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}/stats")
-    public Stats getStatsBySessionId(@PathVariable UUID sessionId)
+    public Stats getStatsBySessionId(@PathVariable String sessionId)
     {
         return rarfService.getStatsBySessionId(sessionId);
     }
@@ -84,7 +83,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}")
-    public PageResponse<Rarf> getRarfsBySessionId(@PathVariable UUID sessionId,
+    public PageResponse<Rarf> getRarfsBySessionId(@PathVariable String sessionId,
                                                   @RequestParam(defaultValue = "0") @Min(0) Integer page,
                                                   @RequestParam(defaultValue = "20") @Min(0) Integer size) {
         return rarfService.getBySessionId(sessionId, page, size);
@@ -98,7 +97,7 @@ public class RarfController {
     }
 
     @GetMapping("/session/{sessionId}/user/{userId}")
-    public Rarf getRarfBySessionIdAndUserId(@PathVariable UUID sessionId, @PathVariable String userId) {
+    public Rarf getRarfBySessionIdAndUserId(@PathVariable String sessionId, @PathVariable String userId) {
         return rarfService.getBySessionIdAndUserId(sessionId, userId);
     }
 
@@ -109,14 +108,14 @@ public class RarfController {
     }
 
     @PatchMapping("/session/{sessionId}/user/{userId}")
-    public Rarf fillFeedback(@PathVariable UUID sessionId, @PathVariable String userId,
+    public Rarf fillFeedback(@PathVariable String sessionId, @PathVariable String userId,
                              @RequestBody @Valid FillFeedbackRequest request)
     {
         return rarfService.update(sessionId, userId, request);
     }
 
     @DeleteMapping("/session/{sessionId}/user/{userId}")
-    public void deleteRarf(@PathVariable UUID sessionId, @PathVariable String userId) {
+    public void deleteRarf(@PathVariable String sessionId, @PathVariable String userId) {
         rarfService.delete(sessionId, userId);
     }
 

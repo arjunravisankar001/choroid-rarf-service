@@ -23,9 +23,9 @@ dependencies {
     // For web applications
     implementation("org.springframework.boot:spring-boot-starter-web")
 
-    // For postgresql database access with JPA and Hibernate
+    // For MySQL database access with JPA and Hibernate
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
-    implementation("org.postgresql:postgresql:42.7.8")
+    implementation("com.mysql:mysql-connector-j:8.3.0")
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")

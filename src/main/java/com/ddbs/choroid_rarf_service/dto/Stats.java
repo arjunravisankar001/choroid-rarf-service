@@ -4,7 +4,6 @@ package com.ddbs.choroid_rarf_service.dto;
 import lombok.*;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -13,7 +12,7 @@ import java.util.UUID;
 @ToString
 public class Stats {
 
-    private UUID sessionId;
+    private String sessionId;
 
     private Map<String, Integer> rating;
     private Map<String, Integer> understandableScore;

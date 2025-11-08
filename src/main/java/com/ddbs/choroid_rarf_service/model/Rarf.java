@@ -3,8 +3,6 @@ package com.ddbs.choroid_rarf_service.model;
 
 import lombok.*;
 
-import java.util.UUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,7 +10,7 @@ import java.util.UUID;
 @ToString
 public class Rarf {
 
-    private UUID sessionId; //session ID
+    private String sessionId; //session ID
     private String userId; //username of the respondent
 
     private Boolean feedbackFilled; //whether the feedback form was filled
